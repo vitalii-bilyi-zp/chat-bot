@@ -138,7 +138,7 @@ class DialogManager:
         self.theme_analyzer = ThemeAnalyzer()
 
     def init_dialog(self):
-        print('Здравствуйте, что вас интерисует?')
+        print('Здравствуйте, что вас интересует?')
 
         query = input()
         theme = self.theme_analyzer.get_theme(query)

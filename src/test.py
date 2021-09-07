@@ -21,9 +21,9 @@ corpus = [
     {'text': 'Планирую записаться на прием', 'theme': Theme.APPOINTMENT.value},
     {'text': 'Можно ли попасть на прием к врачу', 'theme': Theme.APPOINTMENT.value},
     {'text': 'Хотел бы попасть на прием в вашей клинике', 'theme': Theme.APPOINTMENT.value},
-    {'text': 'Интерисует стоимость ваших услуг', 'theme': Theme.SERVICES_COST.value},
+    {'text': 'Интересует стоимость ваших услуг', 'theme': Theme.SERVICES_COST.value},
     {'text': 'Сколько стоят услуги в вашей клинике?', 'theme': Theme.SERVICES_COST.value},
-    {'text': 'Интерисует стоимость услуг в вашей клинике', 'theme': Theme.SERVICES_COST.value},
+    {'text': 'Интересует стоимость услуг в вашей клинике', 'theme': Theme.SERVICES_COST.value},
 ]
 
 
@@ -134,7 +134,7 @@ def start_dialog():
         Theme.SERVICES_COST.value: 'Ответ на запрос стоимости услуг'
     }
 
-    print('Здравствуйте, что вас интерисует?')
+    print('Здравствуйте, что вас интересует?')
 
     query = input()
     theme = get_theme(query)
