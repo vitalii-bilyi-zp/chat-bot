@@ -98,9 +98,7 @@ class ThemeAnalyzer:
 
     def get_theme(self, query):
         new_corpus = [{'text': query}, *corpus]
-        all_tokens, lexicon = self.tokenizer.tokenize_corpus(new_corpus)
-        vectorizer = Vectorizer(all_tokens, lexicon)
-        theme_vectors = vectorizer.get_theme_vectors()
+        theme_vectors = self.get_theme_vectors(new_corpus)
 
         result_index = None
         prev_sim_coefficient = 0
@@ -117,6 +115,12 @@ class ThemeAnalyzer:
 
         if result_index is not None:
             return corpus[result_index]['theme']
+
+    def get_theme_vectors(self, corpus):
+        all_tokens, lexicon = self.tokenizer.tokenize_corpus(corpus)
+        vectorizer = Vectorizer(all_tokens, lexicon)
+
+        return vectorizer.get_theme_vectors()
 
     @staticmethod
     def cosine_sim(vec1, vec2):
