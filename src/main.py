@@ -3,6 +3,7 @@ import nltk
 import math
 import pymorphy2
 import numpy as np
+from abc import ABC, abstractmethod
 
 # download stopwords if they were not installed
 try:
@@ -44,51 +45,55 @@ class Tokenizer:
                 if (word[0] not in self.punctuation_symbols and word not in self.ru_stopwords)]
 
 
-class Vectorizer:
+class Vectorizer(ABC):
     def __init__(self, all_tokens, lexicon):
         self.all_tokens = all_tokens
         self.lexicon = lexicon
 
-    def get_theme_vectors(self, include_idf=True):
-        tf_idf_vectors = self.get_tf_idf_vectors(include_idf)
-        tf_idf_array = np.array(tf_idf_vectors)
-        U, s, Vt = np.linalg.svd(tf_idf_array.transpose())
+    @abstractmethod
+    def get_vectors(self):
+        pass
 
-        return tf_idf_array.dot(U)
 
-    def get_tf_idf_vectors(self, include_idf=True):
+class TFIDFVectorizer(Vectorizer):
+    def get_vectors(self):
         zero_vector = OrderedDict((token, 0) for token in self.lexicon)
 
         tf_idf = []
         idf_mapping = {}
-        if include_idf:
-            num_docs = len(self.all_tokens)
-            for token in self.lexicon:
-                num_docs_containing_token = 0
-                for text_tokens in self.all_tokens:
-                    if token in text_tokens:
-                        num_docs_containing_token += 1
 
-                if num_docs_containing_token == 0:
-                    idf_mapping[token] = 1
-                else:
-                    idf_mapping[token] = num_docs / num_docs_containing_token
+        num_docs = len(self.all_tokens)
+        for token in self.lexicon:
+            num_docs_containing_token = 0
+            for text_tokens in self.all_tokens:
+                if token in text_tokens:
+                    num_docs_containing_token += 1
+
+            if num_docs_containing_token == 0:
+                idf_mapping[token] = 1
+            else:
+                idf_mapping[token] = num_docs / num_docs_containing_token
 
         for text_tokens in self.all_tokens:
             vector = copy.copy(zero_vector)
             token_counts = Counter(text_tokens)
             for token, value in token_counts.items():
                 tf = value / len(self.lexicon)
-
-                idf = 1
-                if include_idf:
-                    idf = idf_mapping.get(token, 1)
-
+                idf = idf_mapping.get(token, 1)
                 vector[token] = tf * idf
 
             tf_idf.append(vector)
 
         return [list(vector.values()) for vector in tf_idf]
+
+
+class ThemeVectorizer(TFIDFVectorizer):
+    def get_vectors(self):
+        tf_idf_vectors = super().get_vectors()
+        tf_idf_array = np.array(tf_idf_vectors)
+        U, s, Vt = np.linalg.svd(tf_idf_array.transpose())
+
+        return tf_idf_array.dot(U)
 
 
 class ThemeAnalyzer:
@@ -118,9 +123,9 @@ class ThemeAnalyzer:
 
     def get_theme_vectors(self, corpus):
         all_tokens, lexicon = self.tokenizer.tokenize_corpus(corpus)
-        vectorizer = Vectorizer(all_tokens, lexicon)
+        vectorizer = ThemeVectorizer(all_tokens, lexicon)
 
-        return vectorizer.get_theme_vectors()
+        return vectorizer.get_vectors()
 
     @staticmethod
     def cosine_sim(vec1, vec2):
