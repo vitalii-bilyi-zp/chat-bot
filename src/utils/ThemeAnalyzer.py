@@ -1,23 +1,23 @@
 import math
-from src.utils import Tokenizer, ThemeVectorizer
+from src.utils import Tokenizer, Vectorizer
 
 
 class ThemeAnalyzer:
-    def __init__(self, corpus):
+    def __init__(self, corpus: list, tokenizer: Tokenizer, vectorizer: Vectorizer):
         self.corpus = corpus
-        self.tokenizer = Tokenizer(['!', '@', '"', '“', '’', '«', '»', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',
-                                    '—', '/', ':', ';', '<', '=', '>', '?', '^', '_', '`', '{', '|', '}', '~', '[', ']'])
+        self.tokenizer = tokenizer
+        self.vectorizer = vectorizer
 
-    def get_theme(self, query):
+    def get_theme(self, query: str):
         new_corpus = [{'text': query}, *self.corpus]
-        theme_vectors = self.get_theme_vectors(new_corpus)
+        vectors = self.get_vectors(new_corpus)
 
         result_index = None
         prev_sim_coefficient = 0
         min_sim_coefficient = 0.5
 
-        vec1 = theme_vectors[0][0:3]
-        for index, vector in enumerate(theme_vectors[1:]):
+        vec1 = vectors[0][0:3]
+        for index, vector in enumerate(vectors[1:]):
             vec2 = vector[0:3]
             sim_coefficient = ThemeAnalyzer.cosine_sim(vec1, vec2)
 
@@ -28,14 +28,12 @@ class ThemeAnalyzer:
         if result_index is not None:
             return self.corpus[result_index]['theme']
 
-    def get_theme_vectors(self, corpus):
+    def get_vectors(self, corpus: list):
         all_tokens, lexicon = self.tokenizer.tokenize_corpus(corpus)
-        vectorizer = ThemeVectorizer(all_tokens, lexicon)
-
-        return vectorizer.get_vectors()
+        return self.vectorizer.get_vectors(all_tokens, lexicon)
 
     @staticmethod
-    def cosine_sim(vec1, vec2):
+    def cosine_sim(vec1: list, vec2: list):
         dot_prod = 0
         for i, v in enumerate(vec1):
             dot_prod += v * vec2[i]
